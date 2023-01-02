@@ -6,7 +6,6 @@ it auto send hunters to a player that just did a crime.
 you need to edit some script in your system to make this work.
 
 
-
 # qb-storerobbery example
 - add this in the qb-storerobbery config.lua
 ```lua
@@ -101,7 +100,8 @@ CreateThread(function()
         end
     end
 end)
-
+```
+```lua
 RegisterNetEvent('lockpicks:UseLockpick', function(isAdvanced)
     usingAdvanced = isAdvanced
     for k, v in pairs(Config.Registers) do
