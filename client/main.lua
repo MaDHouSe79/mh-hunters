@@ -260,7 +260,7 @@ local function SpawnHelikopters()
 end
 
 local function spawnVehicles()
-    if Config.UseCars and spawncount > 0 and spawncount < 10  then
+    if Config.UseCars and spawncount > 0 and spawncount < 10 then
         for i = 1, spawncount do
             local model = Config.Vehicles[math.random(1, #Config.Vehicles)]
             local coords = GetEntityCoords(PlayerPedId())
