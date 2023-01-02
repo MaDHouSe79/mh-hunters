@@ -1,9 +1,13 @@
 # MH-Hunters
 - incase you dont have police you can enable this.
 
-#what this script does is,
+# what this script does is,
 it auto send hunters to a player that just did a crime.
 you need to edit some script in your system to make this work.
+
+# Commands
+- /startHunt [id] (admin only)
+- /stopHunt [id]  (admin only)
 
 
 # qb-storerobbery example
@@ -11,8 +15,6 @@ you need to edit some script in your system to make this work.
 ```lua
 Config.UseHuntersIfNoCopsOnline = true -- set to false if you don't want to use the hunters ;)
 ```
-
-# qb-storerobbery example
 ```lua
 CreateThread(function()
     while true do
