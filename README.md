@@ -42,7 +42,7 @@ you need to edit some script in your system to make this work.
 ```lua
 Config.UseHuntersIfNoCopsOnline = true -- set to false if you don't want to use the hunters ;)
 ```
-# To change in client side
+# To change in client side qb-storerobbery
 ```lua
 CreateThread(function()
     while true do
