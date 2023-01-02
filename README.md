@@ -205,3 +205,7 @@ RegisterNetEvent('lockpicks:UseLockpick', function(isAdvanced)
     end
 end)
 ```
+
+# LICENSE
+[GPL LICENSE](./LICENSE)<br />
+&copy; [MaDHouSe79](https://www.youtube.com/@MaDHouSe79)
