@@ -36,7 +36,13 @@ you need to edit some script in your system to make this work.
 - /startHunt [id] (admin only)
 - /stopHunt [id]  (admin only)
 
-# To change in client side qb-policejob/server/main.lua file.
+# To add in client side qb-policejob/server/main.lua file.
+```lua
+-- add this in the `police:server:policeAlert` as show below.
+if count == 0 then --< to add, for starting the hunters if no cops are online. (start)
+    TriggerServerEvent("mh-hunters:server:start", math.random(2, 4))
+end -- (end)
+```
 ```lua
 RegisterNetEvent('police:server:policeAlert', function(text)
     local src = source
