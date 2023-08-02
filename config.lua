@@ -3,22 +3,21 @@
 --[[ ===================================================== ]]--
 
 Config = {}
-Config.Job = 'police' -- police job
-Config.WaitTime = 60000 -- a wait timer before the hunters will spawn and chase (5 secs) 
+Config.WaitTime = 5000 --60000       -- a wait timer before the hunters will spawn and chase (1 min) 
 
-Config.UseCars = true -- true if you want hunter cars.
-Config.UseBikes = true -- true if you want hunter bikes.
-Config.UseHelikopters = false
+Config.EnableIfNoCopsOnline = true   -- enable hunters when no cops are online.
+
+Config.MinLoseHuntersDistance = 1000 -- lose the hunters in a amount of distance.
+Config.HuntingTime = 300             -- 300 is 5 min
+
+Config.UseCars = true
+Config.UseBikes = true
+Config.MaxVehicleSpawn = 3           -- max vehicles to spawn don't ho to height.
 
 
-Config.MinVehicleSpawn = 2 -- min vehicles to spawn (don't go to high, you will get a network overflow)
-Config.MaxVehicleSpawn = 4 -- max vehicles to spawn (don't go to high, you will get a network overflow)
+Config.PedAttackCallHunters = true   -- if a player attacks a ped the hunters are comming.
 
-Config.AutoActivedOnCrime = true -- activate when doing a crime, this can be slap or kill other peds
-Config.EnableIfNoCopsOnline = true -- enable hunters when there is are no cops online.
-
-Config.Models      = {"g_m_y_lost_01", "g_m_y_lost_02", "g_m_y_lost_03"}
-Config.Bikes       = {"sanchez", "sanchez2", "akuma", "carbonrs", "bagger", "daemon"}
-Config.Vehicles    = {"vacca", "jester", "buffalo", "carbonizzare", "comet2", "dominator", "feltzer2", "fusilade"}
-Config.Helikopters = {"buzzard", "buzzard2", "annihilator", "maverick", "savage"}
-Config.Weapons     = {"WEAPON_PISTOL", "WEAPON_PISTOL_MK2", "WEAPON_COMBATPISTOL", "WEAPON_APPISTOL", "WEAPON_STUNGUN"}
+Config.Models = {"g_m_y_lost_01", "g_m_y_lost_02", "g_m_y_lost_03"}
+Config.Bikes = {"sanchez", "sanchez2", "akuma", "carbonrs", "bagger", "daemon"}
+Config.Vehicles = {"vacca", "jester", "buffalo", "carbonizzare", "comet2", "dominator", "feltzer2", "fusilade"}
+Config.Weapons = {"WEAPON_PISTOL", "WEAPON_PISTOL_MK2", "WEAPON_COMBATPISTOL", "WEAPON_APPISTOL", "WEAPON_STUNGUN"}
