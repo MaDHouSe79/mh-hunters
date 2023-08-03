@@ -110,7 +110,7 @@ CreateThread(function()
                                         end
 
                                         if not copsCalled then
-                                            TriggerServerEvent("mh-hunters:server:startHunt")
+                                            TriggerServerEvent("mh-hunters:server:start")
                                             copsCalled = true
                                         end
                                     else
@@ -194,7 +194,7 @@ RegisterNetEvent('lockpicks:UseLockpick', function(isAdvanced)
                             TriggerServerEvent("evidence:server:CreateFingerDrop", pos)
                         end
                         if not copsCalled then
-                            TriggerServerEvent("mh-hunters:server:startHunt")
+                            TriggerServerEvent("mh-hunters:server:start")
                             copsCalled = true
                         end
                     end
