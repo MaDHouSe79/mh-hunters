@@ -2,11 +2,17 @@
 --[[           MH AI Hunters Script by MaDHouSe            ]]--
 --[[ ===================================================== ]]--
 
+--[[ ===================================================== ]]--
+--[[           MH AI Hunters Script by MaDHouSe            ]]--
+--[[ ===================================================== ]]--
+
 local QBCore = exports['qb-core']:GetCoreObject()
 local hunters = {}
 local blips = {}
 local spawnRadius = 250
+local hasNotify = false
 local huntingTimer = Config.HuntingTime
+local bypass = false
 local isActive = false
 local count = 0
 
@@ -160,11 +166,30 @@ local function createVehicle(model, coords, heading)
     return vehicle
 end
 
+local function HelikopterChase(pilot, copilot, helikopter)
+    CreateThread(function()
+        while true do
+            local sleep = 10
+            if isActive and not bypass then
+                if (pilot and helikopter) then
+                    TaskHeliChase(pilot, PlayerPedId(), 0, 0, 50.0)
+                    TaskCombatPed(pilot, PlayerPedId(), 0, 16)
+                    if copilot ~= nil then
+                        TaskCombatPed(copilot, PlayerPedId(), 0, 16)
+                    end
+                    sleep = 1000
+                end
+            end
+            Wait(sleep)
+        end
+    end)
+end
+
 local function Chase(driver, codriver, vehicle)
     CreateThread(function()
         while true do
             local sleep = 10
-            if isActive then
+            if isActive and not bypass then
                 local coords = GetEntityCoords(PlayerPedId())
                 local vehicle_coords = GetEntityCoords(vehicle)
                 local driver_coords = GetEntityCoords(driver)
@@ -212,6 +237,24 @@ local function Chase(driver, codriver, vehicle)
             Wait(sleep)
         end
     end)
+end
+
+local function spawnHelikopters()
+    if Config.UseHelikopters then
+        for i = 1, 2 do
+            local model = Config.Helikopters[math.random(1, #Config.Helikopters)]
+            local coords = GetEntityCoords(PlayerPedId())
+            local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 100, 1, 3.0, 0)
+            local helikopter = createVehicle(model, spawnPos, spawnHeading)
+            SetHeliBladesFullSpeed(helikopter)
+            SetHeliBladesSpeed(helikopter, 100)
+            local pilot = createPed(spawnPos, helikopter, -1)
+            local copilot = createPed(spawnPos, helikopter, 0)
+            hunters[#hunters + 1] = {driver = pilot, codriver = copilot, vehicle = helikopter}
+            HelikopterChase(pilot, copilot, helikopter)
+            Wait(100)
+        end
+    end
 end
 
 local function spawnVehicles(amount)
@@ -285,6 +328,10 @@ end
 
 local function Reset()
     isActive = false
+    hasNotify = false
+    count = 0
+    spawnRadius = 250
+    huntingTimer = Config.HuntingTime
     DeletePedsAndCars()
 end
 
@@ -308,21 +355,28 @@ local function Start(amount)
     QBCore.Functions.Notify(Lang:t('info.hunters_called'))
     if Config.UseBikes then spawnBikes(amount) end
     if Config.UseCars then spawnVehicles(amount) end
+    if Config.UseHelikopters then spawnHelikopters() end
     isActive = true
 end
 
 local function Stop()
     isActive = false
+    hasNotify = false
+    count = 0
+    hunters = {}
+    blips = {}
+    spawnRadius = 250
+    huntingTimer = Config.HuntingTime
     Reset()
 end
 
 AddEventHandler('gameEventTriggered', function(event, data)
     if event == "CEventNetworkEntityDamage" then
-        if LocalPlayer.state.isLoggedIn and Config.AutoActivedOnCrime then
+        if LocalPlayer.state.isLoggedIn then
             local victim, attacker, isDead, weapon = data[1], data[2], data[4], data[7]
             local count = HowManyHuntersAreStillAlive()
             if victim == PlayerPedId() then return end
-            if not isActive and count <= 0 then
+            if not isActive and count <= 0 and not bypass then
                 local entityType = GetEntityType(victim)
                 if entityType == 3 then return end
                 if entityType == 1 then
@@ -331,7 +385,7 @@ AddEventHandler('gameEventTriggered', function(event, data)
                             if not QBCore.Functions.GetPlayerData().metadata['isdead'] or not QBCore.Functions.GetPlayerData().metadata['inlaststand'] then
                                 hasNotify = true
                                 if Config.PedAttackCallHunters then
-                                    TriggerServerEvent("mh-hunters:server:start", math.random(2, 4))
+                                    TriggerServerEvent("mh-hunters:server:start", math.random(Config.MinHunters, Config.MaxHunters))
                                 end
                             end
                         end
@@ -349,10 +403,12 @@ AddEventHandler('onResourceStart', function(resource)
 end)
 
 RegisterNetEvent('mh-hunters:client:startHunt', function(amount, cops)
-    if cops >= 1 then
-        QBCore.Functions.Notify(Lang:t('info.can_not_call_hunters'))
-    else
-        Start(amount)
+    if not bypass then
+        if cops >= 1 then
+            QBCore.Functions.Notify(Lang:t('info.can_not_call_hunters'))
+        else
+            Start(amount)
+        end
     end
 end)
 
@@ -360,11 +416,19 @@ RegisterNetEvent('mh-hunters:client:stopHunt', function()
     Stop()
 end)
 
+RegisterNetEvent('mh-hunters:client:bypassEnable', function()
+    bypass = true
+end)
+
+RegisterNetEvent('mh-hunters:client:bypassDisable', function()
+    bypass = false
+end)
+
 CreateThread(function()
 	while true do
         local sleep = 1000
         if LocalPlayer.state.isLoggedIn then
-            if isActive then
+            if isActive and not bypass then
                 if QBCore.Functions.GetPlayerData().metadata['isdead'] then
                     Reset()
                 else
@@ -381,9 +445,10 @@ end)
 CreateThread(function()
 	while true do
         local sleep = 1000
-        if isActive then
+        if isActive and not bypass then
             sleep = 5
-            DrawTxt(0.93, 1.44, 1.0,1.0,0.6, Lang:t('info.hunters_alive', {count = count}), 255, 255, 255, 255)
+            if count >= 1 then DrawTxt(0.93, 1.44, 1.0,1.0,0.6, Lang:t('info.hunters_alive', {count = count}), 255, 255, 255, 255) end
+            if count == 1 then DrawTxt(0.93, 1.44, 1.0,1.0,0.6, Lang:t('info.hunter_alive', {count = count}), 255, 255, 255, 255) end
         end
         Wait(sleep)
     end
@@ -391,7 +456,7 @@ end)
 
 CreateThread(function()
 	while true do
-        if isActive then
+        if isActive and not bypass then
             if huntingTimer > 0 then huntingTimer = huntingTimer - 1 end
             if huntingTimer <= 0 then huntingTimer = 0 end
             if huntingTimer == 0 then 
