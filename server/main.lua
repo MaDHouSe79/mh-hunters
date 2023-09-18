@@ -50,15 +50,8 @@ end)
 
 RegisterNetEvent('police:server:policeAlert', function(text)
     local src = source
-    local count = 0
-    for _, v in pairs(QBCore.Functions.GetQBPlayers()) do
-        if v and v.PlayerData.job.name == 'police' and v.PlayerData.job.onduty then
-            count = count + 1
-        end
-    end
-    if count == 0 then
-        if Config.UseHunters then
-            TriggerClientEvent("mh-hunters:client:startHunt", src, math.random(Config.MinHunters, Config.MaxHunters), 0)
-        end
+    local count = CountCops()
+    if Config.EnableIfNoCopsOnline and Config.UseHunters and count == 0 then
+        TriggerClientEvent("mh-hunters:client:startHunt", src, math.random(Config.MinHunters, Config.MaxHunters), count)
     end
 end)
