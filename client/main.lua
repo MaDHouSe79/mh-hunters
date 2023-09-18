@@ -447,7 +447,7 @@ CreateThread(function()
         local sleep = 1000
         if isActive and not bypass then
             sleep = 5
-            if count >= 1 then DrawTxt(0.93, 1.44, 1.0,1.0,0.6, Lang:t('info.hunters_alive', {count = count}), 255, 255, 255, 255) end
+            if count > 1 then DrawTxt(0.93, 1.44, 1.0,1.0,0.6, Lang:t('info.hunters_alive', {count = count}), 255, 255, 255, 255) end
             if count == 1 then DrawTxt(0.93, 1.44, 1.0,1.0,0.6, Lang:t('info.hunter_alive', {count = count}), 255, 255, 255, 255) end
         end
         Wait(sleep)
