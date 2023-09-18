@@ -34,7 +34,7 @@ end, 'admin')
 RegisterServerEvent('mh-hunters:server:start')
 AddEventHandler('mh-hunters:server:start', function(amount)
     local src = source
-    if not Config.EnableIfNoCopsOnline then
+    if Config.EnableIfNoCopsOnline then
         TriggerClientEvent("mh-hunters:client:startHunt", src, amount, CountCops())
     else
         if Config.UseHunters then
