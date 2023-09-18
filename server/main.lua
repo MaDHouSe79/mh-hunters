@@ -5,8 +5,14 @@
 local QBCore = exports['qb-core']:GetCoreObject()
 
 local function CountCops()
-    local count = QBCore.Functions.GetDutyCount("police")
-    return count
+    local online = 0	
+    for k, id in pairs(QBCore.Functions.GetPlayers()) do
+		local target = QBCore.Functions.GetPlayer(id)
+		if target.PlayerData.job.name == "police" and target.PlayerData.job.onduty then
+            online = online + 1
+        end
+    end
+    return online
 end
 
 QBCore.Commands.Add("startHunt", "", {}, false, function(source, args)
@@ -28,7 +34,7 @@ end, 'admin')
 RegisterServerEvent('mh-hunters:server:start')
 AddEventHandler('mh-hunters:server:start', function(amount)
     local src = source
-    if Config.EnableIfNoCopsOnline then
+    if not Config.EnableIfNoCopsOnline then
         TriggerClientEvent("mh-hunters:client:startHunt", src, amount, CountCops())
     else
         if Config.UseHunters then
