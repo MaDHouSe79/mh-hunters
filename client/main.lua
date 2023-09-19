@@ -2,10 +2,6 @@
 --[[           MH AI Hunters Script by MaDHouSe            ]]--
 --[[ ===================================================== ]]--
 
---[[ ===================================================== ]]--
---[[           MH AI Hunters Script by MaDHouSe            ]]--
---[[ ===================================================== ]]--
-
 local QBCore = exports['qb-core']:GetCoreObject()
 local hunters = {}
 local blips = {}
