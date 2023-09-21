@@ -205,6 +205,11 @@ local function HelikopterChase(pilot, copilot, helikopter)
                     sleep = 1000
                 end
             end
+	    if not isActive and (pilot and helikopter) and not bypass then
+                local flytoPoint = vector3(-408.47, 1206.16, 325.64) 
+                TaskHeliMission(pilot, helikopter, 0, 0, flytoPoint.x, flytoPoint.y, flytoPoint.z, 4, 500.0, -1.0, -1.0, 10, 10, 5.0, 0)
+                sleep = 500
+            end
             Wait(sleep)
         end
     end)
