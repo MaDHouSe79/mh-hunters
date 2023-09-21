@@ -193,8 +193,14 @@ local function HelikopterChase(pilot, copilot, helikopter)
                 if (pilot and helikopter) then
                     TaskHeliChase(pilot, PlayerPedId(), 0, 0, 50.0)
                     TaskCombatPed(pilot, PlayerPedId(), 0, 16)
+		    if Config.HelikopterCanShoot then
+                        SetVehicleShootAtTarget(pilot, PlayerPedId())
+                    end
                     if copilot ~= nil then
                         TaskCombatPed(copilot, PlayerPedId(), 0, 16)
+			if Config.HelikopterCanShoot then
+                            SetVehicleShootAtTarget(copilot, PlayerPedId())
+                        end
                     end
                     sleep = 1000
                 end
