@@ -36,44 +36,6 @@ players can still do stuff so you can set the limit cops to 0
 and if it' s 0 cops the hunters will come.
 
 
-# Maby you have to replace this in 'resources/[qb]/qb-policejob/server/main.lua' around line 641
-```lua
--- From
-RegisterNetEvent('police:server:policeAlert', function(text)
-    local src = source
-    local ped = GetPlayerPed(src)
-    local coords = GetEntityCoords(ped)
-    local players = QBCore.Functions.GetQBPlayers()
-    for _, v in pairs(players) do
-        if v and v.PlayerData.job.name == 'police' and v.PlayerData.job.onduty then
-            local alertData = {title = Lang:t('info.new_call'), coords = {x = coords.x, y = coords.y, z = coords.z}, description = text}
-            TriggerClientEvent("qb-phone:client:addPoliceAlert", v.PlayerData.source, alertData)
-            TriggerClientEvent('police:client:policeAlert', v.PlayerData.source, coords, text)
-        end
-    end
-end)
-
--- To
-RegisterNetEvent('police:server:policeAlert', function(text)
-    local src = source
-    local ped = GetPlayerPed(src)
-    local coords = GetEntityCoords(ped)
-    local players = QBCore.Functions.GetQBPlayers()
-    local count = 0
-    for _, v in pairs(players) do
-        if v and v.PlayerData.job.name == 'police' and v.PlayerData.job.onduty then
-            local alertData = {title = Lang:t('info.new_call'), coords = {x = coords.x, y = coords.y, z = coords.z}, description = text}
-            TriggerClientEvent("qb-phone:client:addPoliceAlert", v.PlayerData.source, alertData)
-            TriggerClientEvent('police:client:policeAlert', v.PlayerData.source, coords, text)
-            count = count + 1
-        end
-    end
-    if count == 0 then
-        TriggerClientEvent("mh-hunters:client:startHunt", src, math.random(2, 4))
-    end
-end)
-```
-
 # LICENSE
 [GPL LICENSE](./LICENSE)<br />
 &copy; [MaDHouSe79](https://www.youtube.com/@MaDHouSe79)
