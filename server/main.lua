@@ -7,8 +7,8 @@ local QBCore = exports['qb-core']:GetCoreObject()
 local function CountCops()
     local online = 0	
     for k, id in pairs(QBCore.Functions.GetPlayers()) do
-	local target = QBCore.Functions.GetPlayer(id)
-	if target.PlayerData.job.name == "police" and target.PlayerData.job.onduty then
+		local target = QBCore.Functions.GetPlayer(id)
+		if target.PlayerData.job.name == "police" and target.PlayerData.job.onduty then
             online = online + 1
         end
     end
