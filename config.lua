@@ -19,6 +19,8 @@ Config.UseBikes = true
 Config.UseHelikopters = true 
 Config.MaxVehicleSpawn = 3           -- max vehicles to spawn don't ho to height.
 
+Config.HelikopterCanShoot = true     -- if true helikopters can shoot you
+
 Config.PedAttackCallHunters = true   -- if a player attacks a ped the hunters are comming.
 
 Config.Models = {"g_m_y_lost_01", "g_m_y_lost_02", "g_m_y_lost_03"}
