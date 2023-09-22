@@ -153,7 +153,7 @@ local function createPed(coords, vehicle, seat)
     local ped = CreatePed(4, model, coords.x, coords.y, coords.z, 0, true, true)
     GiveWeaponToPed(ped, Config.Weapons[math.random(1, #Config.Weapons)], 999, false, true)
     SetPedIntoVehicle(ped, vehicle, seat)
-    SetPedOutfit(ped)
+    if Config.UseCustumPedModel then SetPedOutfit(ped) end
     SetEntityHealth(ped, 250)
     SetPedArmour(ped, 100)
     SetPedAsCop(ped, true)
