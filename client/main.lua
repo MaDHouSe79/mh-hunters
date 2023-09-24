@@ -463,7 +463,7 @@ CreateThread(function()
                     count = HowManyHuntersAreStillAlive()
                     if count <= 0 then Reset() end
                 end
-                sleep = 100
+                sleep = Config.WaitTimeBeforeDeleteHunter
             end
         end
         Wait(sleep)
