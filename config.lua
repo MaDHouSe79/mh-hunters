@@ -8,7 +8,7 @@ Config.WaitTime = 5000 --60000       -- a wait timer before the hunters will spa
 Config.UseHunters = true             -- if you want the hunter enable set this true
 Config.EnableIfNoCopsOnline = true   -- enable hunters when no cops are online.
 
-Config.WaitTimeBeforeDeleteHunter = 1000
+Config.WaitTimeBeforeDeleteHunter = 1000 -- little delay before the hunters will be deleted
 
 Config.MinLoseHuntersDistance = 1000 -- lose the hunters in a amount of distance.
 Config.HuntingTime = 900             -- 300 is 10 min
