@@ -104,10 +104,8 @@ end
 
 local function SetPedOutfit(ped)
     local data = Config.Outfit
-    local hearTexture = math.random(1,5)
-    local hearItem = math.random(1,2)
-    if data["hair"] ~= nil then SetPedComponentVariation(ped, 2, hearItem, hearTexture, 0) end
-    if data["beard"] ~= nil then SetPedComponentVariation(ped, 1, data["beard"].item, data["hair"].texture, 0) end
+    if data["hair"] ~= nil then SetPedComponentVariation(ped, 2, data["hair"].item, data["hair"].texture, 0) end
+    if data["beard"] ~= nil then SetPedComponentVariation(ped, 1, data["beard"].item, data["beard"].texture, 0) end
     if data["pants"] ~= nil then SetPedComponentVariation(ped, 4, data["pants"].item, data["pants"].texture, 0) end
     if data["arms"] ~= nil then SetPedComponentVariation(ped, 3, data["arms"].item, data["arms"].texture, 0) end
     if data["t-shirt"] ~= nil then SetPedComponentVariation(ped, 8, data["t-shirt"].item, data["t-shirt"].texture, 0) end
