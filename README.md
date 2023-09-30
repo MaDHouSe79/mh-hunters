@@ -35,6 +35,8 @@ a simpel script if you don't have police online
 players can still do stuff so you can set the limit cops to 0
 and if it' s 0 cops the hunters will come.
 
+# 🙈 Youtube
+- [Youtube](https://www.youtube.com/channel/UC6431XeIqHjswry5OYtim0A)
 
 # LICENSE
 [GPL LICENSE](./LICENSE)<br />
