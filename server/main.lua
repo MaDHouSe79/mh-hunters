@@ -23,6 +23,7 @@ QBCore.Commands.Add("startHunt", "", {}, false, function(source, args)
             amount = Config.MaxVehicleSpawn
         end
         if Config.UseHunters then
+            isbusy = true
             TriggerClientEvent("mh-hunters:client:startHunt", id, amount, 0)
         end
     end
@@ -59,7 +60,8 @@ end)
 RegisterNetEvent('police:server:policeAlert', function(text)
     local src = source
     local count = CountCops()
-    if Config.EnableIfNoCopsOnline and Config.UseHunters and count == 0 then
+    if Config.EnableIfNoCopsOnline and Config.UseHunters and count == 0 and not isbusy then
+        isbusy = true
         TriggerClientEvent("mh-hunters:client:startHunt", src, math.random(Config.MinHunters, Config.MaxHunters), count)
     end
 end)
