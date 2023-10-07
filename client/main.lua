@@ -11,12 +11,73 @@ local bypass = false
 local isActive = false
 local count = 0
 
-local carsHasSpawned = false
-local bikesHasSpawned = false
-local helisHasSpawned = false
+local deadHunters = {}
+
+local function AddPedAsDead(ped)
+    deadHunters[#deadHunters + 1] = {ped = ped}
+end
+
+local function DeleteDeadHunters()
+    for k, v in pairs(deadHunters) do
+        if v.ped ~= nil then
+            if DoesEntityExist(v.ped) then
+                DeleteEntity(v.ped)
+                DeletePed(v.ped)
+                Wait(1000)
+            end
+        end
+    end
+end
 
 local function GetDistance(pos1, pos2)
     return #(vector3(pos1.x, pos1.y, pos1.z) - vector3(pos2.x, pos2.y, pos2.z))
+end
+
+local function DeletePedsAndCars()
+    if #hunters > 0 then
+        for _, v in pairs(hunters) do
+            SetEntityAsMissionEntity(v.vehicle, true, true)
+            if v.driver ~= nil then
+                ClearPedTasks(v.driver)
+                TaskEnterVehicle(v.driver, v.vehicle, -1, -1, 2.0, 1, 0)
+                TaskVehicleDriveWander(v.driver, v.vehicle, 17.0, 524863)
+            end
+            if v.codriver ~= nil then
+                ClearPedTasks(v.codriver)
+                if v.driver ~= nil then
+                    SetPedIntoVehicle(v.codriver, v.vehicle, 0)
+                    TaskVehicleDriveWander(v.driver, v.vehicle, 17.0, 524863)
+                else
+                    TaskEnterVehicle(v.codriver, v.vehicle, -1, -1, 2.0, 1, 0)
+                    TaskVehicleDriveWander(v.codriver, v.vehicle, 17.0, 524863)
+                end
+            end
+            SetEntityAsNoLongerNeeded(v.vehicle)
+            SetPedAsNoLongerNeeded(v.driver)
+            if v.codriver ~= nil then
+                SetPedAsNoLongerNeeded(v.codriver)
+            end
+        end
+        Wait(25000)
+        for _, v in pairs(hunters) do
+            if v.driver ~= nil then
+                DeleteEntity(v.driver)
+            end
+            if v.codriver ~= nil then
+                DeleteEntity(v.codriver)
+            end
+            if v.vehicle ~= nil then
+                DeleteEntity(v.vehicle)
+            end
+        end
+    end
+    if #blips > 0 then
+        for _, blip in pairs(blips) do
+            RemoveBlip(blip)
+        end
+    end
+    blips = {}
+    hunters = {}
 end
 
 local function DeleteHunters()
@@ -45,6 +106,7 @@ local function DeleteHunters()
             end
         end
     end
+    TriggerServerEvent('mh-hunters:server:stop')
     QBCore.Functions.Notify(Lang:t('info.you_lose_the_hunters'))
 end
 
@@ -57,8 +119,9 @@ local function HowManyHuntersAreStillAlive()
                     if DoesEntityExist(hunters[i].driver) then
                         if IsEntityAPed(hunters[i].driver) then
                             if IsEntityDead(hunters[i].driver) then
-                                DeleteEntity(hunters[i].driver)
+                                AddPedAsDead(hunters[i].driver)
                                 hunters[i].driver = nil
+                                --DeleteEntity(hunters[i].driver)
                             else
                                 if GetDistance(GetEntityCoords(hunters[i].driver), GetEntityCoords(PlayerPedId())) >
                                     Config.MinLoseHuntersDistance then
@@ -76,7 +139,8 @@ local function HowManyHuntersAreStillAlive()
                     if DoesEntityExist(hunters[i].codriver) then
                         if IsEntityAPed(hunters[i].codriver) then
                             if IsEntityDead(hunters[i].codriver) then
-                                DeleteEntity(hunters[i].codriver)
+                                --DeleteEntity(hunters[i].codriver)
+                                AddPedAsDead(hunters[i].codriver)
                                 hunters[i].codriver = nil
                             else
                                 if GetDistance(GetEntityCoords(hunters[i].codriver), GetEntityCoords(PlayerPedId())) >
@@ -94,12 +158,9 @@ local function HowManyHuntersAreStillAlive()
                 if hunters[i].vehicle ~= nil then
                     if DoesEntityExist(hunters[i].vehicle) then
                         if hunters[i].driver == nil and hunters[i].codriver == nil then
-                            DeleteEntity(hunters[i].vehicle)
+                            --DeleteEntity(hunters[i].vehicle)
                         end
                     end
-                end
-                if hunters[i].driver == nil and hunters[i].codriver == nil and hunters[i].vehicle == nil then
-                    hunters[i] = nil
                 end
             end
         end
@@ -107,13 +168,26 @@ local function HowManyHuntersAreStillAlive()
     return alive
 end
 
+local function Reset()
+    isActive = false
+    hasNotify = false
+    count = 0
+    spawnRadius = 250
+    huntingTimer = Config.HuntingTime
+    DeletePedsAndCars()
+    DeleteDeadHunters()
+    TriggerServerEvent('mh-hunters:server:stop')
+end
+
 local function SetPedOutfit(ped)
     local data = Config.Outfit
+    local hearTexture = math.random(1, 5)
+    local hearItem = math.random(1, 2)
     if data["hair"] ~= nil then
-        SetPedComponentVariation(ped, 2, data["hair"].item, data["hair"].texture, 0)
+        SetPedComponentVariation(ped, 2, hearItem, hearTexture, 0)
     end
     if data["beard"] ~= nil then
-        SetPedComponentVariation(ped, 1, data["beard"].item, data["beard"].texture, 0)
+        SetPedComponentVariation(ped, 1, data["beard"].item, data["hair"].texture, 0)
     end
     if data["pants"] ~= nil then
         SetPedComponentVariation(ped, 4, data["pants"].item, data["pants"].texture, 0)
@@ -188,7 +262,9 @@ local function createPed(coords, vehicle, seat)
     end
     loadModel(model)
     local ped = CreatePed(4, model, coords.x, coords.y, coords.z, 0, true, true)
-    GiveWeaponToPed(ped, Config.Weapons[math.random(1, #Config.Weapons)], 999, false, true)
+    local weapon = Config.Weapons[math.random(1, #Config.Weapons)]
+    GiveWeaponToPed(ped, weapon, 999, false, true)
+    SetPedInfiniteAmmo(ped, true, GetHashKey(weapon))	
     SetPedIntoVehicle(ped, vehicle, seat)
     if Config.UseCustumPedModel then
         SetPedOutfit(ped)
@@ -293,17 +369,6 @@ local function Chase(driver, codriver, vehicle)
                 if DoesEntityExist(codriver) then
                     TaskCombatPed(codriver, PlayerPedId(), 0, 16)
                 end
-                if IsEntityDead(driver) then
-                    DeleteEntity(driver)
-                    driver = nil
-                end
-                if codriver ~= nil and IsEntityDead(codriver) then
-                    DeleteEntity(codriver)
-                    codriver = nil
-                end
-                if driver == nil and codriver == nil then
-                    DeleteEntity(vehicle)
-                end
                 sleep = 500
             end
             Wait(sleep)
@@ -312,9 +377,6 @@ local function Chase(driver, codriver, vehicle)
 end
 
 local function spawnHelikopters()
-    if helisHasSpawned then
-        return
-    end
     if Config.UseHelikopters then
         for i = 1, 2 do
             local model = Config.Helikopters[math.random(1, #Config.Helikopters)]
@@ -323,10 +385,28 @@ local function spawnHelikopters()
                                                                                    math.random(-spawnRadius, spawnRadius),
                 coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 100, 1, 3.0, 0)
             local helikopter = createVehicle(model, spawnPos, spawnHeading)
-            SetHeliBladesFullSpeed(helikopter)
+
             SetHeliBladesSpeed(helikopter, 100)
+            SetHeliBladesFullSpeed(helikopter) -- works for planes I guess
+			SetVehicleEngineOn(helikopter, true, true, false)
+			SetVehicleForwardSpeed(helikopter, 60.0)
+			SetVehicleLandingGear(helikopter, 3) --make sure landing gear is retracted
+
+			SetVehicleForwardSpeed(helikopter, movespeed)
+			--make sure a reasonable speed 
             local pilot = createPed(spawnPos, helikopter, -1)
             local copilot = createPed(spawnPos, helikopter, 0)
+
+            SetBlockingOfNonTemporaryEvents(pilot, true) -- ignore explosions and other shocking events
+            SetPedRandomComponentVariation(pilot, false)
+            SetPedKeepTask(pilot, true)
+
+            SetBlockingOfNonTemporaryEvents(copilot, true) -- ignore explosions and other shocking events
+            SetPedRandomComponentVariation(copilot, false)
+            SetPedKeepTask(copilot, true)
+
+			TaskVehicleDriveWander(pilot, GetVehiclePedIsIn(pilot, false), 240.0, 0)
+
             hunters[#hunters + 1] = {
                 driver = pilot,
                 codriver = copilot,
@@ -336,13 +416,9 @@ local function spawnHelikopters()
             Wait(100)
         end
     end
-    helisHasSpawned = true
 end
 
 local function spawnVehicles(amount)
-    if carsHasSpawned then
-        return
-    end
     if Config.UseCars then
         for i = 1, amount do
             local model = Config.Vehicles[math.random(1, #Config.Vehicles)]
@@ -361,13 +437,9 @@ local function spawnVehicles(amount)
             Wait(100)
         end
     end
-    carsHasSpawned = true
 end
 
 local function spawnBikes(amount)
-    if bikesHasSpawned then
-        return
-    end
     if Config.UseBikes then
         for i = 1, amount do
             local model = Config.Bikes[math.random(1, #Config.Bikes)]
@@ -386,66 +458,6 @@ local function spawnBikes(amount)
             Wait(100)
         end
     end
-    bikesHasSpawned = true
-end
-
-local function DeletePedsAndCars()
-    if #hunters > 0 then
-        for _, v in pairs(hunters) do
-            SetEntityAsMissionEntity(v.vehicle, true, true)
-            if v.driver ~= nil then
-                ClearPedTasks(v.driver)
-                SetPedIntoVehicle(v.driver, v.vehicle, -1)
-                TaskVehicleDriveWander(v.driver, v.vehicle, 17.0, 524863)
-            end
-            if v.codriver ~= nil then
-                ClearPedTasks(v.codriver)
-                if v.driver ~= nil then
-                    TaskVehicleDriveWander(v.driver, v.vehicle, 17.0, 524863)
-                    SetPedIntoVehicle(v.codriver, v.vehicle, 0)
-                else
-                    TaskVehicleDriveWander(v.codriver, v.vehicle, 17.0, 524863)
-                    SetPedIntoVehicle(v.codriver, v.vehicle, -1)
-                end
-            end
-            SetEntityAsNoLongerNeeded(v.vehicle)
-            SetPedAsNoLongerNeeded(v.driver)
-            if v.codriver ~= nil then
-                SetPedAsNoLongerNeeded(v.codriver)
-            end
-        end
-        Wait(25000)
-        for _, v in pairs(hunters) do
-            if v.driver ~= nil then
-                DeleteEntity(v.driver)
-            end
-            if v.codriver ~= nil then
-                DeleteEntity(v.codriver)
-            end
-            if v.vehicle ~= nil then
-                DeleteEntity(v.vehicle)
-            end
-        end
-    end
-    if #blips > 0 then
-        for _, blip in pairs(blips) do
-            RemoveBlip(blip)
-        end
-    end
-    blips = {}
-    hunters = {}
-end
-
-local function Reset()
-    isActive = false
-    hasNotify = false
-    carsHasSpawned = false
-    bikesHasSpawned = false
-    helisHasSpawned = false
-    count = 0
-    spawnRadius = 250
-    huntingTimer = Config.HuntingTime
-    DeletePedsAndCars()
 end
 
 local function DrawTxt(x, y, width, height, scale, text, r, g, b, a)
@@ -562,7 +574,7 @@ CreateThread(function()
                         Reset()
                     end
                 end
-                sleep = 500
+                sleep = 100
             end
         end
         Wait(sleep)
