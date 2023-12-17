@@ -52,9 +52,10 @@ AddEventHandler('mh-hunters:server:start', function(amount)
 end)
 
 RegisterServerEvent('mh-hunters:server:stop')
-AddEventHandler('mh-hunters:server:stop', function(id)
+AddEventHandler('mh-hunters:server:stop', function()
+    local src = source
     isbusy = false
-    TriggerClientEvent("mh-hunters:client:stopHunt", id)
+    TriggerClientEvent("mh-hunters:client:stopHunt", source)
 end)
 
 RegisterNetEvent('police:server:policeAlert', function(text)
