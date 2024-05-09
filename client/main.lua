@@ -10,7 +10,6 @@ local huntingTimer = Config.HuntingTime
 local bypass = false
 local isActive = false
 local count = 0
-
 local deadHunters = {}
 
 local function AddPedAsDead(ped)
