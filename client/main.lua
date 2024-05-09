@@ -183,51 +183,21 @@ local function SetPedOutfit(ped)
     local data = Config.Outfit
     local hearTexture = math.random(1, 5)
     local hearItem = math.random(1, 2)
-    if data["hair"] ~= nil then
-        SetPedComponentVariation(ped, 2, hearItem, hearTexture, 0)
-    end
-    if data["beard"] ~= nil then
-        SetPedComponentVariation(ped, 1, data["beard"].item, data["hair"].texture, 0)
-    end
-    if data["pants"] ~= nil then
-        SetPedComponentVariation(ped, 4, data["pants"].item, data["pants"].texture, 0)
-    end
-    if data["arms"] ~= nil then
-        SetPedComponentVariation(ped, 3, data["arms"].item, data["arms"].texture, 0)
-    end
-    if data["t-shirt"] ~= nil then
-        SetPedComponentVariation(ped, 8, data["t-shirt"].item, data["t-shirt"].texture, 0)
-    end
-    if data["vest"] ~= nil then
-        SetPedComponentVariation(ped, 9, data["vest"].item, data["vest"].texture, 0)
-    end
-    if data["torso2"] ~= nil then
-        SetPedComponentVariation(ped, 11, data["torso2"].item, data["torso2"].texture, 0)
-    end
-    if data["shoes"] ~= nil then
-        SetPedComponentVariation(ped, 6, data["shoes"].item, data["shoes"].texture, 0)
-    end
-    if data["bag"] ~= nil then
-        SetPedComponentVariation(ped, 5, data["bag"].item, data["bag"].texture, 0)
-    end
-    if data["decals"] ~= nil then
-        SetPedComponentVariation(ped, 10, data["decals"].item, data["decals"].texture, 0)
-    end
-    if data["mask"] ~= nil then
-        SetPedComponentVariation(ped, 1, data["mask"].item, data["mask"].texture, 0)
-    end
-    if data["bag"] ~= nil then
-        SetPedComponentVariation(ped, 5, data["bag"].item, data["bag"].texture, 0)
-    end
-    if data["hat"] ~= nil and data["hat"].item ~= -1 and data["hat"].item ~= 0 then
-        SetPedPropIndex(ped, 0, data["hat"].item, data["hat"].texture, true)
-    end
-    if data["glass"] ~= nil and data["glass"].item ~= -1 and data["glass"].item ~= 0 then
-        SetPedPropIndex(ped, 1, data["glass"].item, data["glass"].texture, true)
-    end
-    if data["ear"] ~= nil and data["ear"].item ~= -1 and data["ear"].item ~= 0 then
-        SetPedPropIndex(ped, 2, data["ear"].item, data["ear"].texture, true)
-    end
+    if data["hair"] ~= nil then SetPedComponentVariation(ped, 2, hearItem, hearTexture, 0) end
+    if data["beard"] ~= nil then SetPedComponentVariation(ped, 1, data["beard"].item, data["hair"].texture, 0) end
+    if data["pants"] ~= nil then SetPedComponentVariation(ped, 4, data["pants"].item, data["pants"].texture, 0) end
+    if data["arms"] ~= nil then SetPedComponentVariation(ped, 3, data["arms"].item, data["arms"].texture, 0) end
+    if data["t-shirt"] ~= nil then SetPedComponentVariation(ped, 8, data["t-shirt"].item, data["t-shirt"].texture, 0) end
+    if data["vest"] ~= nil then SetPedComponentVariation(ped, 9, data["vest"].item, data["vest"].texture, 0) end
+    if data["torso2"] ~= nil then SetPedComponentVariation(ped, 11, data["torso2"].item, data["torso2"].texture, 0) end
+    if data["shoes"] ~= nil then SetPedComponentVariation(ped, 6, data["shoes"].item, data["shoes"].texture, 0) end
+    if data["bag"] ~= nil then SetPedComponentVariation(ped, 5, data["bag"].item, data["bag"].texture, 0) end
+    if data["decals"] ~= nil then SetPedComponentVariation(ped, 10, data["decals"].item, data["decals"].texture, 0) end
+    if data["mask"] ~= nil then SetPedComponentVariation(ped, 1, data["mask"].item, data["mask"].texture, 0) end
+    if data["bag"] ~= nil then SetPedComponentVariation(ped, 5, data["bag"].item, data["bag"].texture, 0) end
+    if data["hat"] ~= nil and data["hat"].item ~= -1 and data["hat"].item ~= 0 then SetPedPropIndex(ped, 0, data["hat"].item, data["hat"].texture, true) end
+    if data["glass"] ~= nil and data["glass"].item ~= -1 and data["glass"].item ~= 0 then SetPedPropIndex(ped, 1, data["glass"].item, data["glass"].texture, true) end
+    if data["ear"] ~= nil and data["ear"].item ~= -1 and data["ear"].item ~= 0 then SetPedPropIndex(ped, 2, data["ear"].item, data["ear"].texture, true) end
 end
 
 local function loadModel(model)
@@ -257,18 +227,14 @@ end
 
 local function createPed(coords, vehicle, seat)
     local model = Config.Models[math.random(1, #Config.Models)]
-    if Config.UseCustumPedModel then
-        model = Config.CustumPedModel
-    end
+    if Config.UseCustumPedModel then model = Config.CustumPedModel end
     loadModel(model)
     local ped = CreatePed(4, model, coords.x, coords.y, coords.z, 0, true, true)
     local weapon = Config.Weapons[math.random(1, #Config.Weapons)]
     GiveWeaponToPed(ped, weapon, 999, false, true)
     SetPedInfiniteAmmo(ped, true, GetHashKey(weapon))	
     SetPedIntoVehicle(ped, vehicle, seat)
-    if Config.UseCustumPedModel then
-        SetPedOutfit(ped)
-    end
+    if Config.UseCustumPedModel then SetPedOutfit(ped) end
     SetEntityHealth(ped, 250)
     SetPedArmour(ped, 100)
     SetPedAsCop(ped, true)
@@ -308,22 +274,17 @@ local function HelikopterChase(pilot, copilot, helikopter)
                 if (pilot and helikopter) then
                     TaskHeliChase(pilot, PlayerPedId(), 0, 0, 50.0)
                     TaskCombatPed(pilot, PlayerPedId(), 0, 16)
-                    if Config.HelikopterCanShoot then
-                        SetVehicleShootAtTarget(pilot, PlayerPedId())
-                    end
+                    if Config.HelikopterCanShoot then SetVehicleShootAtTarget(pilot, PlayerPedId()) end
                     if copilot ~= nil then
                         TaskCombatPed(copilot, PlayerPedId(), 0, 16)
-                        if Config.HelikopterCanShoot then
-                            SetVehicleShootAtTarget(copilot, PlayerPedId())
-                        end
+                        if Config.HelikopterCanShoot then SetVehicleShootAtTarget(copilot, PlayerPedId()) end
                     end
                     sleep = 1000
                 end
             end
             if not isActive and (pilot and helikopter) and not bypass then
                 local flytoPoint = vector3(-408.47, 1206.16, 325.64)
-                TaskHeliMission(pilot, helikopter, 0, 0, flytoPoint.x, flytoPoint.y, flytoPoint.z, 4, 500.0, -1.0, -1.0,
-                    10, 10, 5.0, 0)
+                TaskHeliMission(pilot, helikopter, 0, 0, flytoPoint.x, flytoPoint.y, flytoPoint.z, 4, 500.0, -1.0, -1.0, 10, 10, 5.0, 0)
                 sleep = 500
             end
             Wait(sleep)
@@ -341,34 +302,20 @@ local function Chase(driver, codriver, vehicle)
                 local driver_coords = GetEntityCoords(driver)
                 local distance = GetDistance(vehicle_coords, coords)
                 if distance < 50 then
-                    if DoesEntityExist(driver) then
-                        TaskGoToCoordAnyMeans(driver, coords, 2.0, 0, 0, 786603, 0xbf800000)
-                    end
-                    if codriver ~= nil and DoesEntityExist(codriver) then
-                        TaskGoToCoordAnyMeans(codriver, coords, 2.0, 0, 0, 786603, 0xbf800000)
-                    end
+                    if DoesEntityExist(driver) then TaskGoToCoordAnyMeans(driver, coords, 2.0, 0, 0, 786603, 0xbf800000) end
+                    if codriver ~= nil and DoesEntityExist(codriver) then TaskGoToCoordAnyMeans(codriver, coords, 2.0, 0, 0, 786603, 0xbf800000) end
                 else
                     if DoesEntityExist(driver) then
                         SetPedIntoVehicle(driver, vehicle, -1)
-                        if DoesEntityExist(codriver) then
-                            SetPedIntoVehicle(codriver, vehicle, 0)
-                        end
-                        TaskVehicleDriveToCoord(driver, vehicle, coords.x, coords.y, coords.z, 100.0, 1.0, vehicle,
-                            537133628, 1.0, true)
+                        if DoesEntityExist(codriver) then SetPedIntoVehicle(codriver, vehicle, 0) end
+                        TaskVehicleDriveToCoord(driver, vehicle, coords.x, coords.y, coords.z, 100.0, 1.0, vehicle, 537133628, 1.0, true)
                     else
-                        if DoesEntityExist(codriver) then
-                            SetPedIntoVehicle(codriver, vehicle, -1)
-                        end
-                        TaskVehicleDriveToCoord(codriver, vehicle, coords.x, coords.y, coords.z, 100.0, 1.0, vehicle,
-                            537133628, 1.0, true)
+                        if DoesEntityExist(codriver) then SetPedIntoVehicle(codriver, vehicle, -1) end
+                        TaskVehicleDriveToCoord(codriver, vehicle, coords.x, coords.y, coords.z, 100.0, 1.0, vehicle, 537133628, 1.0, true)
                     end
                 end
-                if DoesEntityExist(driver) then
-                    TaskCombatPed(driver, PlayerPedId(), 0, 16)
-                end
-                if DoesEntityExist(codriver) then
-                    TaskCombatPed(codriver, PlayerPedId(), 0, 16)
-                end
+                if DoesEntityExist(driver) then TaskCombatPed(driver, PlayerPedId(), 0, 16) end
+                if DoesEntityExist(codriver) then TaskCombatPed(codriver, PlayerPedId(), 0, 16) end
                 sleep = 500
             end
             Wait(sleep)
@@ -378,43 +325,32 @@ end
 
 local function spawnHelikopters()
     if Config.UseHelikopters then
-        for i = 1, 2 do
-            local model = Config.Helikopters[math.random(1, #Config.Helikopters)]
-            local coords = GetEntityCoords(PlayerPedId())
-            local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(coords.x +
-                                                                                   math.random(-spawnRadius, spawnRadius),
-                coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 100, 1, 3.0, 0)
-            local helikopter = createVehicle(model, spawnPos, spawnHeading)
-
-            SetHeliBladesSpeed(helikopter, 100)
-            SetHeliBladesFullSpeed(helikopter) -- works for planes I guess
-			SetVehicleEngineOn(helikopter, true, true, false)
-			SetVehicleForwardSpeed(helikopter, 60.0)
-			SetVehicleLandingGear(helikopter, 3) --make sure landing gear is retracted
-
-			SetVehicleForwardSpeed(helikopter, movespeed)
-			--make sure a reasonable speed 
-            local pilot = createPed(spawnPos, helikopter, -1)
-            local copilot = createPed(spawnPos, helikopter, 0)
-
-            SetBlockingOfNonTemporaryEvents(pilot, true) -- ignore explosions and other shocking events
-            SetPedRandomComponentVariation(pilot, false)
-            SetPedKeepTask(pilot, true)
-
-            SetBlockingOfNonTemporaryEvents(copilot, true) -- ignore explosions and other shocking events
-            SetPedRandomComponentVariation(copilot, false)
-            SetPedKeepTask(copilot, true)
-
-			TaskVehicleDriveWander(pilot, GetVehiclePedIsIn(pilot, false), 240.0, 0)
-
-            hunters[#hunters + 1] = {
-                driver = pilot,
-                codriver = copilot,
-                vehicle = helikopter
-            }
-            HelikopterChase(pilot, copilot, helikopter)
-            Wait(100)
-        end
+        local model = Config.Helikopters[math.random(1, #Config.Helikopters)]
+        local coords = GetEntityCoords(PlayerPedId())
+        local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 100, 1, 3.0, 0)
+        local helikopter = createVehicle(model, spawnPos, spawnHeading)
+        SetHeliBladesSpeed(helikopter, 100)
+        SetHeliBladesFullSpeed(helikopter) -- works for planes I guess
+	SetVehicleEngineOn(helikopter, true, true, false)
+	SetVehicleForwardSpeed(helikopter, 60.0)
+	SetVehicleLandingGear(helikopter, 3) --make sure landing gear is retracted
+	SetVehicleForwardSpeed(helikopter, movespeed)
+        local pilot = createPed(spawnPos, helikopter, -1)
+        local copilot = createPed(spawnPos, helikopter, 0)
+        SetBlockingOfNonTemporaryEvents(pilot, true) -- ignore explosions and other shocking events
+        SetPedRandomComponentVariation(pilot, false)
+        SetPedKeepTask(pilot, true)
+        SetBlockingOfNonTemporaryEvents(copilot, true) -- ignore explosions and other shocking events
+        SetPedRandomComponentVariation(copilot, false)
+        SetPedKeepTask(copilot, true)
+	TaskVehicleDriveWander(pilot, GetVehiclePedIsIn(pilot, false), 240.0, 0)
+        hunters[#hunters + 1] = {
+            driver = pilot,
+            codriver = copilot,
+            vehicle = helikopter
+        }
+        HelikopterChase(pilot, copilot, helikopter)
+        Wait(100)
     end
 end
 
@@ -423,9 +359,7 @@ local function spawnVehicles(amount)
         for i = 1, amount do
             local model = Config.Vehicles[math.random(1, #Config.Vehicles)]
             local coords = GetEntityCoords(PlayerPedId())
-            local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(coords.x +
-                                                                                   math.random(-spawnRadius, spawnRadius),
-                coords.y + math.random(-spawnRadius, spawnRadius), coords.z, 1, 3.0, 0)
+            local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z, 1, 3.0, 0)
             local vehicle = createVehicle(model, spawnPos, spawnHeading)
             local driver = createPed(spawnPos, vehicle, -1)
             hunters[#hunters + 1] = {
@@ -444,9 +378,7 @@ local function spawnBikes(amount)
         for i = 1, amount do
             local model = Config.Bikes[math.random(1, #Config.Bikes)]
             local coords = GetEntityCoords(PlayerPedId())
-            local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(coords.x +
-                                                                                   math.random(-spawnRadius, spawnRadius),
-                coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 50.0, 1, 3.0, 0)
+            local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 50.0, 1, 3.0, 0)
             local bike = createVehicle(model, spawnPos, spawnHeading)
             local driver = createPed(spawnPos, bike, -1)
             hunters[#hunters + 1] = {
@@ -478,15 +410,10 @@ local function Start(amount)
     Wait(Config.WaitTime)
     huntingTimer = Config.HuntingTime
     QBCore.Functions.Notify(Lang:t('info.hunters_called'))
-    if Config.UseBikes then
-        spawnBikes(amount)
-    end
-    if Config.UseCars then
-        spawnVehicles(amount)
-    end
-    if Config.UseHelikopters then
-        spawnHelikopters()
-    end
+    if amount > Config.MaxVehicleSpawn then amount = Config.MaxVehicleSpawn end
+    if Config.UseBikes then spawnBikes(amount) end
+    if Config.UseCars then spawnVehicles(amount) end
+    if Config.UseHelikopters then spawnHelikopters() end
     isActive = true
 end
 
@@ -506,14 +433,10 @@ AddEventHandler('gameEventTriggered', function(event, data)
         if LocalPlayer.state.isLoggedIn then
             local victim, attacker, isDead, weapon = data[1], data[2], data[4], data[7]
             local count = HowManyHuntersAreStillAlive()
-            if victim == PlayerPedId() then
-                return
-            end
+            if victim == PlayerPedId() then return end
             if not isActive and count <= 0 and not bypass then
                 local entityType = GetEntityType(victim)
-                if entityType == 3 then
-                    return
-                end
+                if entityType == 3 then return end
                 if entityType == 1 then
                     if IsPedHuman(victim) and GetEntityHealth(victim) <= 0 then
                         if attacker == PlayerPedId() and not hasNotify then
@@ -521,8 +444,7 @@ AddEventHandler('gameEventTriggered', function(event, data)
                                 not QBCore.Functions.GetPlayerData().metadata['inlaststand'] then
                                 hasNotify = true
                                 if Config.PedAttackCallHunters then
-                                    TriggerServerEvent("mh-hunters:server:start",
-                                        math.random(Config.MinHunters, Config.MaxHunters))
+                                    TriggerServerEvent("mh-hunters:server:start", math.random(Config.MinHunters, Config.MaxHunters))
                                 end
                             end
                         end
@@ -570,9 +492,7 @@ CreateThread(function()
                     Reset()
                 else
                     count = HowManyHuntersAreStillAlive()
-                    if count <= 0 then
-                        Reset()
-                    end
+                    if count <= 0 then Reset() end
                 end
                 sleep = 100
             end
@@ -586,16 +506,8 @@ CreateThread(function()
         local sleep = 1000
         if isActive and not bypass then
             sleep = 5
-            if count > 1 then
-                DrawTxt(0.93, 1.44, 1.0, 1.0, 0.6, Lang:t('info.hunters_alive', {
-                    count = count
-                }), 255, 255, 255, 255)
-            end
-            if count == 1 then
-                DrawTxt(0.93, 1.44, 1.0, 1.0, 0.6, Lang:t('info.hunter_alive', {
-                    count = count
-                }), 255, 255, 255, 255)
-            end
+            if count > 1 then DrawTxt(0.93, 1.44, 1.0, 1.0, 0.6, Lang:t('info.hunters_alive', { count = count }), 255, 255, 255, 255) end
+            if count == 1 then DrawTxt(0.93, 1.44, 1.0, 1.0, 0.6, Lang:t('info.hunter_alive', { count = count }), 255, 255, 255, 255) end
         end
         Wait(sleep)
     end
@@ -604,12 +516,8 @@ end)
 CreateThread(function()
     while true do
         if isActive and not bypass then
-            if huntingTimer > 0 then
-                huntingTimer = huntingTimer - 1
-            end
-            if huntingTimer <= 0 then
-                huntingTimer = 0
-            end
+            if huntingTimer > 0 then huntingTimer = huntingTimer - 1 end
+            if huntingTimer <= 0 then huntingTimer = 0 end
             if huntingTimer == 0 then
                 isActive = false
                 DeleteHunters()
