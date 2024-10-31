@@ -7,7 +7,7 @@ game 'gta5'
 
 description 'MH - Hunters (AI Hunters)'
 author 'MaDHouSe'
-version '1.0'
+version '1.0.0'
 
 shared_scripts {
     '@qb-core/shared/locale.lua',
