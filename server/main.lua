@@ -66,3 +66,16 @@ RegisterNetEvent('police:server:policeAlert', function(text)
         TriggerClientEvent("mh-hunters:client:startHunt", src, math.random(Config.MinHunters, Config.MaxHunters), count)
     end
 end)
+
+CreateThread(function()
+    Wait(5100)
+    MySQL.Async.execute([[
+        CREATE TABLE IF NOT EXISTS `player_hunters` (
+            `id` int(10) NOT NULL AUTO_INCREMENT,
+            `name` varchar(50) NOT NULL,
+            `license` varchar(50) NOT NULL,
+            `amount` int(10) NOT NULL,
+            PRIMARY KEY (`id`) USING BTREE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;    
+    ]])
+end)
