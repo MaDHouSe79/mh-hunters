@@ -25,10 +25,4 @@ server_scripts {
     'server/update.lua',
 }
 
-dependencies {
-    'oxmysql',
-    'qb-core',
-    'mh-core',
-}
-
 lua54 'yes'
