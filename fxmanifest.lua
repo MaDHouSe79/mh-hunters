@@ -27,6 +27,7 @@ server_scripts {
 dependencies {
     'oxmysql',
     'qb-core',
+    'mh-core',
 }
 
 lua54 'yes'
