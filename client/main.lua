@@ -3,6 +3,7 @@
 --[[ ===================================================== ]] --
 local QBCore = exports['qb-core']:GetCoreObject()
 local PlayerData = {}
+local isLoggedIn = false
 local hunters = {}
 local blips = {}
 local spawnRadius = 250
@@ -406,14 +407,39 @@ local function Stop()
     Reset()
 end
 
+local function OnJoin()
+    PlayerData = QBCore.Functions.GetPlayerData()
+    isLoggedIn = true
+    hunters = {}
+    blips = {}
+    spawnRadius = 250
+    hasNotify = false
+    huntingTimer = Config.HuntingTime
+    isActive = false
+    count = 0
+end
+
+local function OnPark()
+    isLoggedIn = false
+    PlayerData = {}
+    hunters = {}
+    blips = {}
+    spawnRadius = 250
+    hasNotify = false
+    huntingTimer = Config.HuntingTime
+    isActive = false
+    count = 0
+end
+
 AddEventHandler('gameEventTriggered', function(event, data)
     if event == "CEventNetworkEntityDamage" then
-        if LocalPlayer.state.isLoggedIn then
+        if isLoggedIn then
             local victim, attacker, isDead, weapon = data[1], data[2], data[4], data[7]
             local count = HowManyHuntersAreStillAlive()
             if (count >=1) or isActive or (victim == PlayerPedId()) or (GetEntityType(victim) == 3) or hasNotify then return end
             if GetEntityType(victim) == 1 and IsPedHuman(victim) and GetEntityHealth(victim) <= 0 and attacker == PlayerPedId() then
-                if (not Config.AmbulanceExport:IsDead() or not Config.AmbulanceExport:IsLaststand() and Config.PedAttackCallHunters) then
+                PlayerData = QBCore.Functions.GetPlayerData()
+                if (not PlayerData.metadata['isdead'] or not PlayerData.metadata['islaststand'] and Config.PedAttackCallHunters) then
                     hasNotify = true
                     TriggerServerEvent("mh-hunters:server:start", math.random(Config.MinHunters, Config.MaxHunters))
                 end
@@ -423,51 +449,19 @@ AddEventHandler('gameEventTriggered', function(event, data)
 end)
 
 AddEventHandler('onResourceStop', function(resource)
-    if resource == GetCurrentResourceName() then
-        PlayerData = {}
-        hunters = {}
-        blips = {}
-        spawnRadius = 250
-        hasNotify = false
-        huntingTimer = Config.HuntingTime
-        isActive = false
-        count = 0
-    end
+    if resource == GetCurrentResourceName() then OnPark() end
 end)
 
 AddEventHandler('onResourceStart', function(resource)
-    if resource == GetCurrentResourceName() then
-        PlayerData = QBCore.Functions.GetPlayerData()
-        hunters = {}
-        blips = {}
-        spawnRadius = 250
-        hasNotify = false
-        huntingTimer = Config.HuntingTime
-        isActive = false
-        count = 0
-    end
+    if resource == GetCurrentResourceName() then OnJoin() end
 end)
 
 AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
-    PlayerData = QBCore.Functions.GetPlayerData()
-    hunters = {}
-    blips = {}
-    spawnRadius = 250
-    hasNotify = false
-    huntingTimer = Config.HuntingTime
-    isActive = false
-    count = 0
+    OnJoin()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
-    PlayerData = {}
-    hunters = {}
-    blips = {}
-    spawnRadius = 250
-    hasNotify = false
-    huntingTimer = Config.HuntingTime
-    isActive = false
-    count = 0
+    OnPark()
 end)
 
 RegisterNetEvent('mh-hunters:client:startHunt', function(amount, cops)
@@ -491,7 +485,8 @@ CreateThread(function()
     while true do
         local sleep = 1000
         if isActive then
-            if Config.AmbulanceExport:IsDead() then
+            PlayerData = QBCore.Functions.GetPlayerData()
+            if PlayerData.metadata['isdead'] then
                 Reset()
             else
                 count = HowManyHuntersAreStillAlive()
@@ -506,7 +501,7 @@ end)
 CreateThread(function()
     while true do
         local sleep = 1000
-        if isActive and not Config.AmbulanceExport:IsDead() then
+        if isActive and not PlayerData.metadata['isdead'] then
             sleep = 5
             if count > 1 then DrawTxt(0.93, 1.44, 1.0, 1.0, 0.6, Lang:t('info.hunters_alive', { count = count }), 255, 255, 255, 255) end
             if count == 1 then DrawTxt(0.93, 1.44, 1.0, 1.0, 0.6, Lang:t('info.hunter_alive', { count = count }), 255, 255, 255, 255) end
@@ -517,7 +512,7 @@ end)
 
 CreateThread(function()
     while true do
-        if isActive and not Config.AmbulanceExport:IsDead() then
+        if isActive and not PlayerData.metadata['isdead'] then
             if huntingTimer > 0 then huntingTimer = huntingTimer - 1 end
             if huntingTimer <= 0 then huntingTimer = 0 end
             if huntingTimer == 0 then
