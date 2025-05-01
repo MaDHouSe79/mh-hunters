@@ -11,9 +11,5 @@ local Translations = {
 
 
 if GetConvar('qb_locale', 'en') == 'nl' then
-    Lang = Locale:new({
-        phrases = Translations,
-        warnOnMissing = true,
-        fallbackLang = Lang,
-    })
+    Lang = Locale:new({phrases = Translations, warnOnMissing = true, fallbackLang = Lang})
 end
