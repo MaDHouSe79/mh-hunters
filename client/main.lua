@@ -150,6 +150,8 @@ local function Reset()
     spawnRadius = 250
     huntingTimer = Config.HuntingTime
     DeletePedsAndCars()
+    SetRelationshipBetweenGroups(1, 'PSYCHO', 'PLAYER')
+    SetRelationshipBetweenGroups(1, 'PSYCHO', 'PSYCHO')
     TriggerServerEvent('mh-hunters:server:stop')
 end
 
@@ -204,6 +206,11 @@ local function createPed(coords, vehicle, seat)
     if Config.UseCustumPedModel then model = Config.CustumPedModel end
     loadModel(model)
     local ped = CreatePed(4, model, coords.x, coords.y, coords.z, 0, true, true)
+    while not DoesEntityExist(ped) do Wait(1) end
+    if not DecorGetBool(ped, "PSYCHO") then
+        SetPedRelationshipGroupHash(ped, 'PSYCHO')
+        DecorSetBool(ped, "PSYCHO", true)
+    end
     local weapon = Config.Weapons[math.random(1, #Config.Weapons)]
     GiveWeaponToPed(ped, weapon, 999, false, true)
     SetPedInfiniteAmmo(ped, true, GetHashKey(weapon))
@@ -213,17 +220,21 @@ local function createPed(coords, vehicle, seat)
     SetPedArmour(ped, 100)
     SetPedAsCop(ped, true)
     SetPedKeepTask(ped, true)
-    SetPedAccuracy(ped, 50)
+    SetPedAccuracy(ped, math.random(50, 80))
     SetPedDropsWeaponsWhenDead(ped, false)
     SetCanAttackFriendly(ped, false, true)
     SetPedCanSwitchWeapon(ped, true)
-    SetPedCombatAbility(ped, 100)
+    SetPedCombatAbility(ped, 2)
     SetPedCombatMovement(ped, 3)
-    SetPedCombatRange(ped, 2)
+    SetPedCombatRange(ped, 1)
     SetPedCombatAttributes(ped, 46, true)
     SetPedSeeingRange(ped, 150.0)
     SetPedHearingRange(ped, 150.0)
     SetPedAlertness(ped, 3)
+    if DecorGetBool(ped, "PSYCHO") then
+        SetRelationshipBetweenGroups(5, 'PSYCHO', 'PLAYER')
+        SetRelationshipBetweenGroups(5, 'PSYCHO', 'PSYCHO')
+    end
     return ped
 end
 
@@ -276,14 +287,18 @@ local function Chase(driver, codriver, vehicle)
                 local driver_coords = GetEntityCoords(driver)
                 local distance = GetDistance(vehicle_coords, coords)
                 if distance < 50 then
-                    if DoesEntityExist(driver) then TaskGoToCoordAnyMeans(driver, coords, 2.0, 0, 0, 786603, 0xbf800000) end
-                    if codriver ~= nil and DoesEntityExist(codriver) then TaskGoToCoordAnyMeans(codriver, coords, 2.0, 0, 0, 786603, 0xbf800000) end
+                    if DoesEntityExist(driver) then 
+                        TaskGoToCoordAnyMeans(driver, coords, 2.0, 0, 0, 786603, 0xbf800000) 
+                        end
+                    if codriver ~= nil and DoesEntityExist(codriver) then 
+                        TaskGoToCoordAnyMeans(codriver, coords, 2.0, 0, 0, 786603, 0xbf800000)
+                    end
                 else
                     if DoesEntityExist(driver) then
                         SetPedIntoVehicle(driver, vehicle, -1)
                         if DoesEntityExist(codriver) then SetPedIntoVehicle(codriver, vehicle, 0) end
                         TaskVehicleDriveToCoord(driver, vehicle, coords.x, coords.y, coords.z, 100.0, 1.0, vehicle, 537133628, 1.0, true)
-                    else
+                    elseif not DoesEntityExist(driver) then
                         if DoesEntityExist(codriver) then SetPedIntoVehicle(codriver, vehicle, -1) end
                         TaskVehicleDriveToCoord(codriver, vehicle, coords.x, coords.y, coords.z, 100.0, 1.0, vehicle, 537133628, 1.0, true)
                     end
@@ -319,11 +334,7 @@ local function spawnHelikopters()
         SetPedRandomComponentVariation(copilot, false)
         SetPedKeepTask(copilot, true)
         TaskVehicleDriveWander(pilot, GetVehiclePedIsIn(pilot, false), 240.0, 0)
-        hunters[#hunters + 1] = {
-            driver = pilot,
-            codriver = copilot,
-            vehicle = helikopter
-        }
+        hunters[#hunters + 1] = {driver = pilot, codriver = copilot, vehicle = helikopter}
         HelikopterChase(pilot, copilot, helikopter)
         Wait(100)
     end
@@ -338,11 +349,7 @@ local function spawnVehicles(amount)
             coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z, 1, 3.0, 0)
             local vehicle = createVehicle(model, spawnPos, spawnHeading)
             local driver = createPed(spawnPos, vehicle, -1)
-            hunters[#hunters + 1] = {
-                driver = driver,
-                codriver = nil,
-                vehicle = vehicle
-            }
+            hunters[#hunters + 1] = {driver = driver, codriver = nil, vehicle = vehicle}
             Chase(driver, codriver, vehicle)
             Wait(100)
         end
@@ -358,11 +365,7 @@ local function spawnBikes(amount)
             coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 50.0, 1, 3.0, 0)
             local bike = createVehicle(model, spawnPos, spawnHeading)
             local driver = createPed(spawnPos, bike, -1)
-            hunters[#hunters + 1] = {
-                driver = driver,
-                codriver = nil,
-                vehicle = bike
-            }
+            hunters[#hunters + 1] = {driver = driver, codriver = nil, vehicle = bike}
             Chase(driver, nil, bike)
             Wait(100)
         end
@@ -479,6 +482,10 @@ RegisterNetEvent('mh-hunters:client:stopHunt', function()
     Stop()
 end)
 
+CreateThread(function()
+    DecorRegister("PSYCHO", 2)
+	AddRelationshipGroup("PSYCHO")
+end)
 
 CreateThread(function()
     while true do
