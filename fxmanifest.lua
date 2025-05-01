@@ -10,8 +10,10 @@ author 'MaDHouSe'
 version '1.0.0'
 
 shared_scripts {
-    '@qb-core/shared/locale.lua',
-    'locales/en.lua', -- change en to your language
+    '@ox_lib/init.lua',
+    'locales/locale.lua',
+    'locales/en.lua',
+    'locales/*.lua',
     'config.lua',
 }
 
@@ -24,5 +26,8 @@ server_scripts {
     'server/main.lua',
     'server/update.lua',
 }
+
+dependencies {'oxmysql', 'ox_lib'}
+
 
 lua54 'yes'

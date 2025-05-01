@@ -19,9 +19,7 @@ QBCore.Commands.Add("startHunt", "", {}, false, function(source, args)
     if args[1] and tonumber(args[1]) > 0 then
         local id = tonumber(args[1])
         local amount = tonumber(args[2])
-        if amount > Config.MaxVehicleSpawn then
-            amount = Config.MaxVehicleSpawn
-        end
+        if amount > Config.MaxVehicleSpawn then amount = Config.MaxVehicleSpawn end
         if Config.UseHunters then
             isbusy = true
             TriggerClientEvent("mh-hunters:client:startHunt", id, amount, 0)
@@ -40,6 +38,7 @@ end, 'admin')
 RegisterServerEvent('mh-hunters:server:start')
 AddEventHandler('mh-hunters:server:start', function(amount)
     local src = source
+    if amount > Config.MaxVehicleSpawn then amount = Config.MaxVehicleSpawn end
     if Config.EnableIfNoCopsOnline and not isbusy then
         isbusy = true
         TriggerClientEvent("mh-hunters:client:startHunt", src, amount, CountCops())
@@ -68,7 +67,6 @@ RegisterNetEvent('police:server:policeAlert', function(text)
 end)
 
 CreateThread(function()
-    Wait(5100)
     MySQL.Async.execute([[
         CREATE TABLE IF NOT EXISTS `player_hunters` (
             `id` int(10) NOT NULL AUTO_INCREMENT,

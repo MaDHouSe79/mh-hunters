@@ -35,6 +35,15 @@ a simpel script if you don't have police online
 players can still do stuff so you can set the limit cops to 0
 and if it' s 0 cops the hunters will come.
 
+# Add Code in `qb-ambulancejob`
+- in `qb-ambulancejob/client/dead.lua` at the bottum of the file
+```lua
+function IsDead() return isDead end
+function IsLaststand() return InLaststand end
+exports('IsDead', IsDead)
+exports('IsLaststand', IsLaststand)
+```
+
 # 🙈 Youtube
 - [Youtube](https://www.youtube.com/channel/UC6431XeIqHjswry5OYtim0A)
 

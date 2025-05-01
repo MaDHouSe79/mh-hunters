@@ -2,29 +2,20 @@
 --[[           MH AI Hunters Script by MaDHouSe            ]] --
 --[[ ===================================================== ]] --
 local QBCore = exports['qb-core']:GetCoreObject()
+local PlayerData = {}
 local hunters = {}
 local blips = {}
 local spawnRadius = 250
 local hasNotify = false
 local huntingTimer = Config.HuntingTime
-local bypass = false
 local isActive = false
 local count = 0
-local deadHunters = {}
 
-local function AddPedAsDead(ped)
-    deadHunters[#deadHunters + 1] = {ped = ped}
-end
-
-local function DeleteDeadHunters()
-    for k, v in pairs(deadHunters) do
-        if v.ped ~= nil then
-            if DoesEntityExist(v.ped) then
-                DeleteEntity(v.ped)
-                DeletePed(v.ped)
-                Wait(1000)
-            end
-        end
+local function Notify(message, type, length)
+    if GetResourceState("ox_lib") ~= 'missing' then
+        lib.notify({ title = "MH Hunters", description = message, type = type })
+    else
+        Notify({ text = "MH Hunters", caption = message }, type, length)
     end
 end
 
@@ -53,21 +44,13 @@ local function DeletePedsAndCars()
             end
             SetEntityAsNoLongerNeeded(v.vehicle)
             SetPedAsNoLongerNeeded(v.driver)
-            if v.codriver ~= nil then
-                SetPedAsNoLongerNeeded(v.codriver)
-            end
+            if v.codriver ~= nil then SetPedAsNoLongerNeeded(v.codriver) end
         end
         Wait(25000)
         for _, v in pairs(hunters) do
-            if v.driver ~= nil then
-                DeleteEntity(v.driver)
-            end
-            if v.codriver ~= nil then
-                DeleteEntity(v.codriver)
-            end
-            if v.vehicle ~= nil then
-                DeleteEntity(v.vehicle)
-            end
+            if v.driver ~= nil then DeleteEntity(v.driver) end
+            if v.codriver ~= nil then DeleteEntity(v.codriver) end
+            if v.vehicle ~= nil then DeleteEntity(v.vehicle) end
         end
     end
     if #blips > 0 then
@@ -80,33 +63,35 @@ local function DeletePedsAndCars()
 end
 
 local function DeleteHunters()
-    for i = 1, #hunters do
-        if hunters[i] then
-            if hunters[i].driver ~= nil then
-                if DoesEntityExist(hunters[i].driver) then
-                    DeleteEntity(hunters[i].driver)
-                    hunters[i].driver = nil
+    if #hunters > 0 then
+        for i = 1, #hunters do
+            if hunters[i] then
+                if hunters[i].driver ~= nil then
+                    if DoesEntityExist(hunters[i].driver) then
+                        DeleteEntity(hunters[i].driver)
+                        hunters[i].driver = nil
+                    end
                 end
-            end
-            if hunters[i].codriver ~= nil then
-                if DoesEntityExist(hunters[i].codriver) then
-                    DeleteEntity(hunters[i].codriver)
-                    hunters[i].codriver = nil
+                if hunters[i].codriver ~= nil then
+                    if DoesEntityExist(hunters[i].codriver) then
+                        DeleteEntity(hunters[i].codriver)
+                        hunters[i].codriver = nil
+                    end
                 end
-            end
-            if hunters[i].vehicle ~= nil then
-                if DoesEntityExist(hunters[i].vehicle) then
-                    DeleteEntity(hunters[i].vehicle)
-                    hunters[i].vehicle = nil
+                if hunters[i].vehicle ~= nil then
+                    if DoesEntityExist(hunters[i].vehicle) then
+                        DeleteEntity(hunters[i].vehicle)
+                        hunters[i].vehicle = nil
+                    end
                 end
-            end
-            if hunters[i].driver == nil and hunters[i].codriver == nil and hunters[i].vehicle == nil then
-                hunters[i] = nil
+                if hunters[i].driver == nil and hunters[i].codriver == nil and hunters[i].vehicle == nil then
+                    hunters[i] = nil
+                end
             end
         end
+        TriggerServerEvent('mh-hunters:server:stop')
+        Notify(Lang:t('info.you_lose_the_hunters'))
     end
-    TriggerServerEvent('mh-hunters:server:stop')
-    QBCore.Functions.Notify(Lang:t('info.you_lose_the_hunters'))
 end
 
 local function HowManyHuntersAreStillAlive()
@@ -115,50 +100,41 @@ local function HowManyHuntersAreStillAlive()
         for i = 1, #hunters do
             if hunters[i] then
                 if hunters[i].driver ~= nil then
-                    if DoesEntityExist(hunters[i].driver) then
-                        if IsEntityAPed(hunters[i].driver) then
-                            if IsEntityDead(hunters[i].driver) then
-                                AddPedAsDead(hunters[i].driver)
+                    if DoesEntityExist(hunters[i].driver) and IsEntityAPed(hunters[i].driver) then
+                        if IsEntityDead(hunters[i].driver) then
+                            DeleteEntity(hunters[i].driver)
+                            hunters[i].driver = nil
+                        else
+                            if GetDistance(GetEntityCoords(hunters[i].driver), GetEntityCoords(PlayerPedId())) > Config.MinLoseHuntersDistance then
+                                DeleteEntity(hunters[i].driver)
                                 hunters[i].driver = nil
-                                --DeleteEntity(hunters[i].driver)
+                                Notify(Lang:t('info.you_lose_a_hunter'))
                             else
-                                if GetDistance(GetEntityCoords(hunters[i].driver), GetEntityCoords(PlayerPedId())) >
-                                    Config.MinLoseHuntersDistance then
-                                    DeleteEntity(hunters[i].driver)
-                                    hunters[i].driver = nil
-                                    QBCore.Functions.Notify(Lang:t('info.you_lose_a_hunter'))
-                                else
-                                    alive = alive + 1
-                                end
+                                alive = alive + 1
                             end
                         end
                     end
                 end
                 if hunters[i].codriver ~= nil then
-                    if DoesEntityExist(hunters[i].codriver) then
-                        if IsEntityAPed(hunters[i].codriver) then
-                            if IsEntityDead(hunters[i].codriver) then
-                                --DeleteEntity(hunters[i].codriver)
-                                AddPedAsDead(hunters[i].codriver)
+                    if DoesEntityExist(hunters[i].codriver) and IsEntityAPed(hunters[i].codriver) then
+                        if IsEntityDead(hunters[i].codriver) then
+                            DeleteEntity(hunters[i].codriver)
+                            hunters[i].codriver = nil
+                        else
+                            if GetDistance(GetEntityCoords(hunters[i].codriver), GetEntityCoords(PlayerPedId())) > Config.MinLoseHuntersDistance then
+                                DeleteEntity(hunters[i].codriver)
                                 hunters[i].codriver = nil
+                                Notify(Lang:t('info.you_lose_a_hunter'))
                             else
-                                if GetDistance(GetEntityCoords(hunters[i].codriver), GetEntityCoords(PlayerPedId())) >
-                                    Config.MinLoseHuntersDistance then
-                                    DeleteEntity(hunters[i].codriver)
-                                    hunters[i].codriver = nil
-                                    QBCore.Functions.Notify(Lang:t('info.you_lose_a_hunter'))
-                                else
-                                    alive = alive + 1
-                                end
+                                alive = alive + 1
                             end
                         end
                     end
                 end
                 if hunters[i].vehicle ~= nil then
-                    if DoesEntityExist(hunters[i].vehicle) then
-                        if hunters[i].driver == nil and hunters[i].codriver == nil then
-                            --DeleteEntity(hunters[i].vehicle)
-                        end
+                    if DoesEntityExist(hunters[i].vehicle) and hunters[i].driver == nil and hunters[i].codriver == nil then
+                        DeleteEntity(hunters[i].vehicle)
+                        hunters[i].vehicle = nil
                     end
                 end
             end
@@ -174,7 +150,6 @@ local function Reset()
     spawnRadius = 250
     huntingTimer = Config.HuntingTime
     DeletePedsAndCars()
-    DeleteDeadHunters()
     TriggerServerEvent('mh-hunters:server:stop')
 end
 
@@ -231,7 +206,7 @@ local function createPed(coords, vehicle, seat)
     local ped = CreatePed(4, model, coords.x, coords.y, coords.z, 0, true, true)
     local weapon = Config.Weapons[math.random(1, #Config.Weapons)]
     GiveWeaponToPed(ped, weapon, 999, false, true)
-    SetPedInfiniteAmmo(ped, true, GetHashKey(weapon))	
+    SetPedInfiniteAmmo(ped, true, GetHashKey(weapon))
     SetPedIntoVehicle(ped, vehicle, seat)
     if Config.UseCustumPedModel then SetPedOutfit(ped) end
     SetEntityHealth(ped, 250)
@@ -269,7 +244,7 @@ local function HelikopterChase(pilot, copilot, helikopter)
     CreateThread(function()
         while true do
             local sleep = 10
-            if isActive and not bypass then
+            if isActive then
                 if (pilot and helikopter) then
                     TaskHeliChase(pilot, PlayerPedId(), 0, 0, 50.0)
                     TaskCombatPed(pilot, PlayerPedId(), 0, 16)
@@ -281,7 +256,7 @@ local function HelikopterChase(pilot, copilot, helikopter)
                     sleep = 1000
                 end
             end
-            if not isActive and (pilot and helikopter) and not bypass then
+            if not isActive and (pilot and helikopter) then
                 local flytoPoint = vector3(-408.47, 1206.16, 325.64)
                 TaskHeliMission(pilot, helikopter, 0, 0, flytoPoint.x, flytoPoint.y, flytoPoint.z, 4, 500.0, -1.0, -1.0, 10, 10, 5.0, 0)
                 sleep = 500
@@ -295,7 +270,7 @@ local function Chase(driver, codriver, vehicle)
     CreateThread(function()
         while true do
             local sleep = 10
-            if isActive and not bypass then
+            if isActive then
                 local coords = GetEntityCoords(PlayerPedId())
                 local vehicle_coords = GetEntityCoords(vehicle)
                 local driver_coords = GetEntityCoords(driver)
@@ -326,14 +301,15 @@ local function spawnHelikopters()
     if Config.UseHelikopters then
         local model = Config.Helikopters[math.random(1, #Config.Helikopters)]
         local coords = GetEntityCoords(PlayerPedId())
-        local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 100, 1, 3.0, 0)
+        local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(
+        coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 100, 1, 3.0, 0)
         local helikopter = createVehicle(model, spawnPos, spawnHeading)
         SetHeliBladesSpeed(helikopter, 100)
         SetHeliBladesFullSpeed(helikopter) -- works for planes I guess
-	SetVehicleEngineOn(helikopter, true, true, false)
-	SetVehicleForwardSpeed(helikopter, 60.0)
-	SetVehicleLandingGear(helikopter, 3) --make sure landing gear is retracted
-	SetVehicleForwardSpeed(helikopter, movespeed)
+        SetVehicleEngineOn(helikopter, true, true, false)
+        SetVehicleForwardSpeed(helikopter, 60.0)
+        SetVehicleLandingGear(helikopter, 3) --make sure landing gear is retracted
+        SetVehicleForwardSpeed(helikopter, movespeed)
         local pilot = createPed(spawnPos, helikopter, -1)
         local copilot = createPed(spawnPos, helikopter, 0)
         SetBlockingOfNonTemporaryEvents(pilot, true) -- ignore explosions and other shocking events
@@ -342,7 +318,7 @@ local function spawnHelikopters()
         SetBlockingOfNonTemporaryEvents(copilot, true) -- ignore explosions and other shocking events
         SetPedRandomComponentVariation(copilot, false)
         SetPedKeepTask(copilot, true)
-	TaskVehicleDriveWander(pilot, GetVehiclePedIsIn(pilot, false), 240.0, 0)
+        TaskVehicleDriveWander(pilot, GetVehiclePedIsIn(pilot, false), 240.0, 0)
         hunters[#hunters + 1] = {
             driver = pilot,
             codriver = copilot,
@@ -358,7 +334,8 @@ local function spawnVehicles(amount)
         for i = 1, amount do
             local model = Config.Vehicles[math.random(1, #Config.Vehicles)]
             local coords = GetEntityCoords(PlayerPedId())
-            local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z, 1, 3.0, 0)
+            local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(
+            coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z, 1, 3.0, 0)
             local vehicle = createVehicle(model, spawnPos, spawnHeading)
             local driver = createPed(spawnPos, vehicle, -1)
             hunters[#hunters + 1] = {
@@ -377,7 +354,8 @@ local function spawnBikes(amount)
         for i = 1, amount do
             local model = Config.Bikes[math.random(1, #Config.Bikes)]
             local coords = GetEntityCoords(PlayerPedId())
-            local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 50.0, 1, 3.0, 0)
+            local _, spawnPos, spawnHeading = GetClosestVehicleNodeWithHeading(
+            coords.x + math.random(-spawnRadius, spawnRadius), coords.y + math.random(-spawnRadius, spawnRadius), coords.z + 50.0, 1, 3.0, 0)
             local bike = createVehicle(model, spawnPos, spawnHeading)
             local driver = createPed(spawnPos, bike, -1)
             hunters[#hunters + 1] = {
@@ -408,7 +386,7 @@ end
 local function Start(amount)
     Wait(Config.WaitTime)
     huntingTimer = Config.HuntingTime
-    QBCore.Functions.Notify(Lang:t('info.hunters_called'))
+    Notify(Lang:t('info.hunters_called'))
     if amount > Config.MaxVehicleSpawn then amount = Config.MaxVehicleSpawn end
     if Config.UseBikes then spawnBikes(amount) end
     if Config.UseCars then spawnVehicles(amount) end
@@ -420,8 +398,6 @@ local function Stop()
     isActive = false
     hasNotify = false
     count = 0
-    hunters = {}
-    blips = {}
     spawnRadius = 250
     huntingTimer = Config.HuntingTime
     Reset()
@@ -432,41 +408,70 @@ AddEventHandler('gameEventTriggered', function(event, data)
         if LocalPlayer.state.isLoggedIn then
             local victim, attacker, isDead, weapon = data[1], data[2], data[4], data[7]
             local count = HowManyHuntersAreStillAlive()
-            if victim == PlayerPedId() then return end
-            if not isActive and count <= 0 and not bypass then
-                local entityType = GetEntityType(victim)
-                if entityType == 3 then return end
-                if entityType == 1 then
-                    if IsPedHuman(victim) and GetEntityHealth(victim) <= 0 then
-                        if attacker == PlayerPedId() and not hasNotify then
-                            if not QBCore.Functions.GetPlayerData().metadata['isdead'] or
-                                not QBCore.Functions.GetPlayerData().metadata['inlaststand'] then
-                                hasNotify = true
-                                if Config.PedAttackCallHunters then
-                                    TriggerServerEvent("mh-hunters:server:start", math.random(Config.MinHunters, Config.MaxHunters))
-                                end
-                            end
-                        end
-                    end
+            if (count >=1) or isActive or (victim == PlayerPedId()) or (GetEntityType(victim) == 3) or hasNotify then return end
+            if GetEntityType(victim) == 1 and IsPedHuman(victim) and GetEntityHealth(victim) <= 0 and attacker == PlayerPedId() then
+                if (not Config.AmbulanceExport:IsDead() or not Config.AmbulanceExport:IsLaststand() and Config.PedAttackCallHunters) then
+                    hasNotify = true
+                    TriggerServerEvent("mh-hunters:server:start", math.random(Config.MinHunters, Config.MaxHunters))
                 end
             end
         end
     end
 end)
 
-AddEventHandler('onResourceStart', function(resource)
+AddEventHandler('onResourceStop', function(resource)
     if resource == GetCurrentResourceName() then
-        Stop()
+        PlayerData = {}
+        hunters = {}
+        blips = {}
+        spawnRadius = 250
+        hasNotify = false
+        huntingTimer = Config.HuntingTime
+        isActive = false
+        count = 0
     end
 end)
 
+AddEventHandler('onResourceStart', function(resource)
+    if resource == GetCurrentResourceName() then
+        PlayerData = QBCore.Functions.GetPlayerData()
+        hunters = {}
+        blips = {}
+        spawnRadius = 250
+        hasNotify = false
+        huntingTimer = Config.HuntingTime
+        isActive = false
+        count = 0
+    end
+end)
+
+AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
+    PlayerData = QBCore.Functions.GetPlayerData()
+    hunters = {}
+    blips = {}
+    spawnRadius = 250
+    hasNotify = false
+    huntingTimer = Config.HuntingTime
+    isActive = false
+    count = 0
+end)
+
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    PlayerData = {}
+    hunters = {}
+    blips = {}
+    spawnRadius = 250
+    hasNotify = false
+    huntingTimer = Config.HuntingTime
+    isActive = false
+    count = 0
+end)
+
 RegisterNetEvent('mh-hunters:client:startHunt', function(amount, cops)
-    if not bypass then
-        if cops >= 1 then
-            QBCore.Functions.Notify(Lang:t('info.can_not_call_hunters'))
-        else
-            Start(amount)
-        end
+    if cops >= 1 then
+        Notify(Lang:t('info.can_not_call_hunters'))
+    else
+        Start(amount)
     end
 end)
 
@@ -474,27 +479,18 @@ RegisterNetEvent('mh-hunters:client:stopHunt', function()
     Stop()
 end)
 
-RegisterNetEvent('mh-hunters:client:bypassEnable', function()
-    bypass = true
-end)
-
-RegisterNetEvent('mh-hunters:client:bypassDisable', function()
-    bypass = false
-end)
 
 CreateThread(function()
     while true do
         local sleep = 1000
-        if LocalPlayer.state.isLoggedIn then
-            if isActive and not bypass then
-                if QBCore.Functions.GetPlayerData().metadata['isdead'] then
-                    Reset()
-                else
-                    count = HowManyHuntersAreStillAlive()
-                    if count <= 0 then Reset() end
-                end
-                sleep = 100
+        if isActive then
+            if Config.AmbulanceExport:IsDead() then
+                Reset()
+            else
+                count = HowManyHuntersAreStillAlive()
+                if count <= 0 then Reset() end
             end
+            sleep = 100
         end
         Wait(sleep)
     end
@@ -503,7 +499,7 @@ end)
 CreateThread(function()
     while true do
         local sleep = 1000
-        if isActive and not bypass then
+        if isActive and not Config.AmbulanceExport:IsDead() then
             sleep = 5
             if count > 1 then DrawTxt(0.93, 1.44, 1.0, 1.0, 0.6, Lang:t('info.hunters_alive', { count = count }), 255, 255, 255, 255) end
             if count == 1 then DrawTxt(0.93, 1.44, 1.0, 1.0, 0.6, Lang:t('info.hunter_alive', { count = count }), 255, 255, 255, 255) end
@@ -514,7 +510,7 @@ end)
 
 CreateThread(function()
     while true do
-        if isActive and not bypass then
+        if isActive and not Config.AmbulanceExport:IsDead() then
             if huntingTimer > 0 then huntingTimer = huntingTimer - 1 end
             if huntingTimer <= 0 then huntingTimer = 0 end
             if huntingTimer == 0 then
