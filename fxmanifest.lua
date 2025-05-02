@@ -7,7 +7,7 @@ game 'gta5'
 
 description 'MH - Hunters (AI Hunters)'
 author 'MaDHouSe'
-version '1.0.0'
+version '1.0.1'
 
 shared_scripts {
     '@ox_lib/init.lua',
