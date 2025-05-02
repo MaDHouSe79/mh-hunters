@@ -206,12 +206,8 @@ local function createPed(coords, vehicle, seat)
     local model = Config.Models[math.random(1, #Config.Models)]
     if Config.UseCustumPedModel then model = Config.CustumPedModel end
     loadModel(model)
-    local ped = CreatePed(4, model, coords.x, coords.y, coords.z, 0, true, true)
+    local ped = CreatePedInsideVehicle(vehicle, 0, model, seat, true, false)
     while not DoesEntityExist(ped) do Wait(1) end
-    if not DecorGetBool(ped, "PSYCHO") then
-        SetPedRelationshipGroupHash(ped, 'PSYCHO')
-        DecorSetBool(ped, "PSYCHO", true)
-    end
     local weapon = Config.Weapons[math.random(1, #Config.Weapons)]
     GiveWeaponToPed(ped, weapon, 999, false, true)
     SetPedInfiniteAmmo(ped, true, GetHashKey(weapon))
