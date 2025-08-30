@@ -22,10 +22,6 @@
   </a>      
 </p>
 
-<p align="center">
-  <img alig src="https://github-profile-trophy.vercel.app/?username=MH-Scripts&margin-w=15&column=6" />
-</p>
-
 # MH-Hunters
 - incase you dont have police you can enable this.
 
